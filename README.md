@@ -65,7 +65,7 @@ npm run dev
 - D1：`DB`
 - R2：`SUB_CACHE`
 
-D1 数据库 ID 不写入仓库配置，避免 Fork 或连接其他 Cloudflare 账号时引用到不存在的数据库。执行 `npm run deploy` 时会自动在当前账号查找或创建 `cloudsub` D1 数据库和 `cloudsub-cache` R2 存储桶，并使用真实 ID 完成本次部署。
+D1 数据库 ID 不写入仓库配置，避免 Fork 或连接其他 Cloudflare 账号时引用到不存在的数据库。执行 `npm run deploy` 时会自动在当前账号查找或创建名为 `cloudsub` 的 D1 数据库和 R2 存储桶，并使用真实 ID 完成本次部署。
 
 可选绑定：
 

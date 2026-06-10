@@ -5,7 +5,7 @@ import { parse } from "jsonc-parser";
 
 const projectName = "cloudsub";
 const databaseName = projectName;
-const bucketName = `${projectName}-cache`;
+const bucketName = projectName;
 const generatedConfig = resolve("wrangler.deploy.json");
 const wranglerCommand = process.platform === "win32" ? "npx.cmd" : "npx";
 
@@ -63,7 +63,7 @@ function assertProjectDatabase(database) {
 
 function ensureBucket() {
   const list = runWrangler(["r2", "bucket", "list"], { capture: true });
-  if (!list.stdout.includes(bucketName)) {
+  if (!list.stdout.split(/\r?\n/).some((line) => line.trim() === bucketName)) {
     console.log(`Creating R2 bucket "${bucketName}"...`);
     runWrangler(["r2", "bucket", "create", bucketName]);
   }
