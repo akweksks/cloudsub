@@ -15,13 +15,6 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application"
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "cloudsub",
-      "database_id": "bf158b6d-e0c1-437f-af5a-eb09c145b9b0"
-    }
-  ],
   "r2_buckets": [
     {
       "binding": "SUB_CACHE",

@@ -8,11 +8,12 @@
   ],
   "scripts": {
     "build": "npm --prefix page/poly-page run build",
-    "deploy": "npm run build && wrangler deploy",
+    "deploy": "npm run build && node scripts/deploy-cloudflare.mjs",
     "dev": "wrangler dev",
     "test": "npm --prefix workers/poly-workers test"
   },
   "devDependencies": {
+    "jsonc-parser": "^3.3.1",
     "wrangler": "^4.0.0"
   }
 }

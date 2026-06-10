@@ -65,6 +65,8 @@ npm run dev
 - D1：`DB`
 - R2：`SUB_CACHE`
 
+D1 数据库 ID 不写入仓库配置，避免 Fork 或连接其他 Cloudflare 账号时引用到不存在的数据库。执行 `npm run deploy` 时会自动在当前账号查找或创建 `cloudsub` D1 数据库和 `cloudsub-cache` R2 存储桶，并使用真实 ID 完成本次部署。
+
 可选绑定：
 
 - KV：`SUB_KV`
@@ -73,7 +75,7 @@ npm run dev
 
 ## 首次初始化 D1
 
-进入 Worker 目录后按顺序执行数据库脚本：
+首次部署新建 D1 时，部署脚本会自动执行全部数据库脚本。已有数据库升级时，可进入 Worker 目录后按顺序手动执行新增脚本：
 
 ```bash
 cd workers/poly-workers
@@ -110,8 +112,7 @@ npm install && npm run build
 npm run deploy
 ```
 
-7. 在 Cloudflare 后台绑定 D1、R2；如需更快读取后台配置，再创建 KV 并绑定为 `SUB_KV`。
-8. 首次部署后执行 D1 初始化脚本。
+7. 部署脚本会自动准备 D1、R2 和 D1 初始表；如需更快读取后台配置，再创建 KV 并绑定为 `SUB_KV`。
 
 之后推送到 GitHub 主分支即可自动构建和部署。
 

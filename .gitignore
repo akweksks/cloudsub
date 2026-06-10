@@ -171,3 +171,4 @@ workers/poly-workers/public
 
 .dev.vars
 .wrangler/
+wrangler.deploy.json
