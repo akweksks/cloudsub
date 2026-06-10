@@ -272,7 +272,12 @@ export async function getJsonDocument(env, key) {
   if (!hasR2(env) || !key) return null;
   const object = await env.SUB_CACHE.get(keyFromR2Pointer(key));
   if (!object) return null;
-  return await object.json();
+  try {
+    return await object.json();
+  } catch (error) {
+    console.warn(`Skip invalid R2 JSON document ${key}: ${error.message}`);
+    return null;
+  }
 }
 
 async function listJsonDocuments(env, prefix, options = 50) {
@@ -291,9 +296,14 @@ async function listJsonDocuments(env, prefix, options = 50) {
     cursor = listed?.truncated && objects.length < scanLimit ? listed.cursor : undefined;
   } while (cursor && objects.length < scanLimit);
   const rows = await Promise.all(objects.map(async (item) => {
-    const object = await env.SUB_CACHE.get(item.key);
-    if (!object) return null;
-    return await object.json();
+    try {
+      const object = await env.SUB_CACHE.get(item.key);
+      if (!object) return null;
+      return await object.json();
+    } catch (error) {
+      console.warn(`Skip invalid R2 JSON document ${item.key}: ${error.message}`);
+      return null;
+    }
   }));
   return rows
     .filter(Boolean)

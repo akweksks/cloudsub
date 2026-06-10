@@ -77,6 +77,16 @@ function resolveRedeemDurationDays(body = {}, plan = null) {
   return 30;
 }
 
+async function loadDashboardPart(name, task, fallback, errors) {
+  try {
+    return await task();
+  } catch (error) {
+    console.warn(`Dashboard ${name} failed: ${error.message}`);
+    errors.push({ name, message: error.message });
+    return fallback;
+  }
+}
+
 export function registerAdminRoutes(app) {
   registerAdminResourceRoutes(app);
 
@@ -403,12 +413,18 @@ export function registerAdminRoutes(app) {
   });
 
   app.get("/api/admin/dashboard", async (c) => {
+    const dashboardErrors = [];
     const [overview, scheduler, nodePool, operationLogs, suspiciousTokens] = await Promise.all([
-      dashboardRepository.getOverview(c.env),
-      getSchedulerStatus(c.env),
-      nodePoolService.getSnapshot(c.env),
-      listOperationalLogs(c.env, { limit: 6 }),
-      subscriptionAccessLogRepository.getSuspiciousTokens(c.env, { limit: 8 }),
+      loadDashboardPart("overview", () => dashboardRepository.getOverview(c.env), {
+        users: {},
+        redeemCodes: {},
+        accessLogs: {},
+        generatedAt: new Date().toISOString(),
+      }, dashboardErrors),
+      loadDashboardPart("scheduler", () => getSchedulerStatus(c.env), null, dashboardErrors),
+      loadDashboardPart("nodePool", () => nodePoolService.getSnapshot(c.env), {}, dashboardErrors),
+      loadDashboardPart("operationLogs", () => listOperationalLogs(c.env, { limit: 6 }), [], dashboardErrors),
+      loadDashboardPart("suspiciousTokens", () => subscriptionAccessLogRepository.getSuspiciousTokens(c.env, { limit: 8 }), { results: [] }, dashboardErrors),
     ]);
     const failedAirports = (scheduler?.checked || []).filter((item) => item.status && item.status !== "healthy");
     const suspiciousRows = suspiciousTokens?.results || [];
@@ -445,6 +461,7 @@ export function registerAdminRoutes(app) {
         health,
         operationLogs,
         suspiciousTokens: suspiciousRows,
+        dashboardErrors,
         alerts,
       },
     });
