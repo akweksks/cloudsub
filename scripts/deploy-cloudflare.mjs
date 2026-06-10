@@ -60,6 +60,22 @@ function ensureBucket() {
   }
 }
 
+function databaseHasSchema() {
+  try {
+    const result = runWrangler([
+      "d1",
+      "execute",
+      databaseName,
+      "--remote",
+      "--json",
+      "--command=SELECT name FROM sqlite_master WHERE type='table' AND name='common';",
+    ], { capture: true });
+    return result.stdout.includes('"common"');
+  } catch {
+    return false;
+  }
+}
+
 function initializeDatabase() {
   const dbDir = resolve("workers/poly-workers/db");
   const files = readdirSync(dbDir)
@@ -98,7 +114,7 @@ function writeDeployConfig(database) {
 try {
   const { database, created } = ensureDatabase();
   ensureBucket();
-  if (created) {
+  if (created || !databaseHasSchema()) {
     initializeDatabase();
   }
   writeDeployConfig(database);
