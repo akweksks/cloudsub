@@ -25,11 +25,12 @@ import { createRedeemCode, createSubscriptionToken } from "../utils/token.js";
 import { downloadJson, normalizeDistributionDomain, normalizeIds } from "../utils/http.js";
 
 function buildNodeFunnel(nodePool = {}) {
-  const valid = Number(nodePool.validCount || 0);
-  const filtered = Number(nodePool.filteredCount || 0);
-  const invalid = Number(nodePool.invalidCount || 0);
-  const duplicate = Number(nodePool.duplicateCount || 0);
-  const raw = Array.isArray(nodePool.rawEntries) ? nodePool.rawEntries.length : valid + filtered + invalid + duplicate;
+  const snapshot = nodePool || {};
+  const valid = Number(snapshot.validCount || 0);
+  const filtered = Number(snapshot.filteredCount || 0);
+  const invalid = Number(snapshot.invalidCount || 0);
+  const duplicate = Number(snapshot.duplicateCount || 0);
+  const raw = Array.isArray(snapshot.rawEntries) ? snapshot.rawEntries.length : valid + filtered + invalid + duplicate;
   return {
     raw,
     valid,

@@ -16,6 +16,27 @@ const SUPPORTED_TYPES = new Set([
   "anytls",
 ]);
 
+function createEmptySnapshot() {
+  return {
+    source: "empty",
+    updatedAt: null,
+    entries: [],
+    rawEntries: [],
+    filteredEntries: [],
+    invalidEntries: [],
+    duplicateEntries: [],
+    subscriptionInfos: [],
+    validCount: 0,
+    filteredCount: 0,
+    invalidCount: 0,
+    duplicateCount: 0,
+    changeSummary: {
+      addedCount: 0,
+      removedCount: 0,
+    },
+  };
+}
+
 function normalizeType(type) {
   return String(type || "").trim().toLowerCase();
 }
@@ -384,7 +405,10 @@ export default {
 
   async getSnapshot(env) {
     const snapshot = await getNodePoolSnapshot(env);
-    if (!snapshot || !Array.isArray(snapshot.entries)) return snapshot;
+    if (!snapshot) return createEmptySnapshot();
+    if (!Array.isArray(snapshot.entries)) {
+      return { ...createEmptySnapshot(), ...snapshot };
+    }
     const finalNameByRawIndex = new Map(
       snapshot.entries
         .map((entry) => [entry.rawIndex, entry.proxy?.name || ""])
