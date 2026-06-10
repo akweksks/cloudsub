@@ -3,8 +3,9 @@ import { readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "jsonc-parser";
 
-const databaseName = "cloudsub";
-const bucketName = "cloudsub-cache";
+const projectName = "cloudsub";
+const databaseName = projectName;
+const bucketName = `${projectName}-cache`;
 const generatedConfig = resolve("wrangler.deploy.json");
 const wranglerCommand = process.platform === "win32" ? "npx.cmd" : "npx";
 
@@ -40,6 +41,7 @@ function findDatabase() {
 function ensureDatabase() {
   const existing = findDatabase();
   if (existing) {
+    assertProjectDatabase(existing);
     return { database: existing, created: false };
   }
 
@@ -49,7 +51,14 @@ function ensureDatabase() {
   if (!created) {
     throw new Error(`D1 database "${databaseName}" was created but could not be resolved.`);
   }
+  assertProjectDatabase(created);
   return { database: created, created: true };
+}
+
+function assertProjectDatabase(database) {
+  if (!database || database.name !== databaseName) {
+    throw new Error(`Refusing to use unrelated D1 database. Expected "${databaseName}".`);
+  }
 }
 
 function ensureBucket() {
@@ -61,6 +70,7 @@ function ensureBucket() {
 }
 
 function databaseHasSchema() {
+  console.log(`Checking D1 schema for "${databaseName}" only...`);
   try {
     const result = runWrangler([
       "d1",
@@ -86,7 +96,7 @@ function initializeDatabase() {
       return left.localeCompare(right, undefined, { numeric: true });
     });
 
-  console.log(`Initializing D1 database with ${files.length} SQL files...`);
+  console.log(`Initializing D1 database "${databaseName}" with ${files.length} SQL files...`);
   for (const file of files) {
     runWrangler(["d1", "execute", databaseName, "--remote", `--file=${resolve(dbDir, file)}`]);
   }
