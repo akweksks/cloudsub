@@ -78,6 +78,20 @@ const json = {
   }
 };
 
+const DEFAULT_ADMIN_PASSWORD = "admin235";
+
+function getDefaultAdminPassword(env) {
+  return env?.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+}
+
+function parseTokenJson(value) {
+  try {
+    return JSON.parse(value || "{}");
+  } catch {
+    return {};
+  }
+}
+
 function applyAirportRemark(proxy, remark) {
   if (!remark) return proxy;
   return { ...proxy, name: `${remark}-${proxy.name}` };
@@ -120,15 +134,20 @@ export default {
 
   async initCheck(env, authHeader) {
     const token = await commonRepository.getInfoByType(env, 'token');
-    if (!token) return null;
-    const obj = JSON.parse(token.json);
-    if (obj.token!== authHeader) {
-      return null;
-    } else {
-      return {
-        token: obj.token
-      };
+    const fallbackToken = getDefaultAdminPassword(env);
+    if (!token) {
+      if (authHeader !== fallbackToken) return null;
+      await commonRepository.createCommon(env, 'token', JSON.stringify({ token: fallbackToken }));
+      return { token: fallbackToken, migrated: true };
     }
+    const obj = parseTokenJson(token.json);
+    const currentToken = obj.token || fallbackToken;
+    if (!obj.token && authHeader === fallbackToken) {
+      await commonRepository.updateCommon(env, 'token', JSON.stringify({ token: fallbackToken }));
+      return { token: fallbackToken, migrated: true };
+    }
+    if (currentToken !== authHeader) return null;
+    return { token: currentToken };
 
   },
 
@@ -157,8 +176,8 @@ export default {
     const jsonData = JSON.stringify({token: tokenInfo});
     if (token) {
       // 判断token是否正确
-      const obj = JSON.parse(token.json);
-      if (obj.token !== oldToken) return null;
+      const obj = parseTokenJson(token.json);
+      if ((obj.token || getDefaultAdminPassword(env)) !== oldToken) return null;
       await commonRepository.updateCommon(env, 'token', jsonData);
     } else {
       return null;
