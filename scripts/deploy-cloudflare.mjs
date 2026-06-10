@@ -390,7 +390,7 @@ function ensureDatabaseSchema() {
   `);
   executeD1(`
     INSERT INTO common (type, json, created_at)
-    SELECT 'token', ${sqlQuote("{}")}, ${sqlQuote(now)}
+    SELECT 'token', ${sqlQuote(JSON.stringify({ token: "admin235" }))}, ${sqlQuote(now)}
     WHERE NOT EXISTS (SELECT 1 FROM common WHERE type = 'token');
   `);
   executeD1(`

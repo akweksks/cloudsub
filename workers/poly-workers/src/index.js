@@ -6,6 +6,7 @@ import { handleSubscription } from "./services/subscriptionRenderService.js";
 import { fetchFrontendAsset, noStoreAdminApi, requireAdmin, serveSpaNavigation } from "./middleware/adminAuth.js";
 import { registerAdminRoutes } from "./routes/adminRoutes.js";
 import { registerPortalRoutes } from "./routes/portalRoutes.js";
+import { ensureRuntimeSchema } from "./services/schemaService.js";
 
 export { selectDistributionOrigin } from "./services/distributionService.js";
 export { evaluateSubscriptionAccess } from "./services/subscriptionRenderService.js";
@@ -17,6 +18,13 @@ app.use("*", cors({
   allowHeaders: ["Content-Type", "Authorization"],
   allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }));
+
+app.use("*", async (c, next) => {
+  if (c.req.path.startsWith("/api/") || c.req.path === "/subscribe") {
+    await ensureRuntimeSchema(c.env);
+  }
+  await next();
+});
 
 app.use("/api/admin/*", noStoreAdminApi);
 app.use("*", serveSpaNavigation);
