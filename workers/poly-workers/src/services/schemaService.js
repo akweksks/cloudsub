@@ -172,11 +172,11 @@ const defaultConfig = {
     distributionDomains: [],
     adminSessionTtlHours: 12,
     adminIpWhitelist: [],
-    nodeBlockKeywords: ["广告", "官网", "网址", "导航", "订阅", "剩余流量", "重置剩余", "套餐到期", "到期"],
+    nodeBlockKeywords: ["ad", "official", "website", "traffic", "expire", "subscription"],
     nodeRenameRules: [],
     nodeNaming: {
-      mode: "region-auto",
-      fallbackName: "节点",
+      mode: "keep",
+      fallbackName: "Node",
       appendNumber: true,
       regionRules: [],
     },
@@ -196,20 +196,20 @@ mode: rule
 log-level: info
 proxies: []
 proxy-groups:
-  - name: 节点选择
+  - name: Proxy
     type: select
     proxies:
       - DIRECT
 rules:
-  - MATCH,节点选择
+  - MATCH,Proxy
 `;
 
 const defaultRouting = `proxy-groups:
-  - name: 节点选择
+  - name: Proxy
     type: select
     include-all-proxies: true
 rules:
-  - MATCH,节点选择
+  - MATCH,Proxy
 `;
 
 let schemaPromise;
@@ -242,22 +242,22 @@ async function seedDefaults(env) {
   `, [JSON.stringify(defaultConfig), now]);
   await run(env, `
     INSERT INTO clash_templates (name, description, yaml_content, is_default, status, created_at, updated_at)
-    SELECT '默认模板', '系统默认 Clash / Mihomo YAML 模板', ?, 1, 'active', ?, ?
+    SELECT ?, ?, ?, 1, 'active', ?, ?
     WHERE NOT EXISTS (SELECT 1 FROM clash_templates)
-  `, [defaultTemplate, now, now]);
+  `, ["Default Template", "Default Clash YAML template", defaultTemplate, now, now]);
   await run(env, `
     INSERT INTO routing_profiles (name, description, source_type, content_ref, status, is_default, allow_user_select, client_support, usage_count, created_at, updated_at)
-    SELECT '系统默认规则', '默认直连与代理分流规则，可在后台修改。', 'builtin', ?, 'active', 1, 1, '["clash"]', 0, ?, ?
+    SELECT ?, ?, 'builtin', ?, 'active', 1, 1, '["clash"]', 0, ?, ?
     WHERE NOT EXISTS (SELECT 1 FROM routing_profiles)
-  `, [defaultRouting, now, now]);
+  `, ["Default Routing", "Default routing profile", defaultRouting, now, now]);
   await run(env, `
     INSERT INTO subscription_plans (name, duration_days, template_id, routing_profile_id, status, sort_order, description, created_at, updated_at)
-    SELECT '基础订阅', 30,
+    SELECT ?, 30,
            (SELECT id FROM clash_templates WHERE status = 'active' ORDER BY is_default DESC, id DESC LIMIT 1),
            (SELECT id FROM routing_profiles WHERE status = 'active' ORDER BY is_default DESC, id DESC LIMIT 1),
-           'active', 10, '默认 30 天订阅套餐', ?, ?
+           'active', 10, ?, ?, ?
     WHERE NOT EXISTS (SELECT 1 FROM subscription_plans)
-  `, [now, now]);
+  `, ["Basic Plan", "Default 30 day plan", now, now]);
 }
 
 async function ensureSchemaNow(env) {

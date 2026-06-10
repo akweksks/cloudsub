@@ -19,13 +19,6 @@ app.use("*", cors({
   allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }));
 
-app.use("*", async (c, next) => {
-  if (c.req.path.startsWith("/api/") || c.req.path === "/subscribe") {
-    await ensureRuntimeSchema(c.env);
-  }
-  await next();
-});
-
 app.get("/api/system/diagnostics", async (c) => {
   const bindings = {
     DB: Boolean(c.env.DB),
@@ -52,6 +45,13 @@ app.get("/api/system/diagnostics", async (c) => {
   });
 });
 
+app.use("*", async (c, next) => {
+  if (c.req.path.startsWith("/api/") || c.req.path === "/subscribe") {
+    await ensureRuntimeSchema(c.env);
+  }
+  await next();
+});
+
 app.use("/api/admin/*", noStoreAdminApi);
 app.use("*", serveSpaNavigation);
 app.use("*", requireAdmin);
@@ -75,7 +75,7 @@ app.onError((error, c) => {
   if (c.req.path.startsWith("/api/")) {
     return c.json({
       code: 500,
-      message: "Internal Server Error",
+      message: error.message || "Internal Server Error",
       data: {
         error: error.message,
         bindings: {
