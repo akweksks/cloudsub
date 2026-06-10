@@ -1,0 +1,23 @@
+{
+	"name": "cloudsub-worker",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"build": "npm --prefix ../../page/poly-page run build",
+		"deploy": "npm run build && wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"test": "vitest run --pool forks",
+		"test:watch": "vitest --pool forks",
+		"test:worker": "vitest run --pool workers"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.7.5",
+		"vitest": "~3.0.7",
+		"wrangler": "^4.0.0"
+	},
+	"dependencies": {
+		"hono": "^4.12.23",
+		"js-yaml": "^4.1.0"
+	}
+}

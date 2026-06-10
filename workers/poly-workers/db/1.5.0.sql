@@ -1,0 +1,3 @@
+ALTER TABLE airports ADD COLUMN health_runtime VARCHAR(32) DEFAULT 'unknown';
+ALTER TABLE airports ADD COLUMN health_colo VARCHAR(32) DEFAULT NULL;
+ALTER TABLE airports ADD COLUMN health_country VARCHAR(32) DEFAULT NULL;

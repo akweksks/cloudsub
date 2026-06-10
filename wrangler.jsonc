@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cloudsub",
+  "main": "workers/poly-workers/src/index.js",
+  "compatibility_date": "2025-03-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
+  "assets": {
+    "directory": "workers/poly-workers/public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cloudsub",
+      "database_id": "bf158b6d-e0c1-437f-af5a-eb09c145b9b0"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "SUB_CACHE",
+      "bucket_name": "cloudsub-cache"
+    }
+  ],
+  // Optional hot cache. Create a KV namespace and uncomment after replacing the id.
+  // "kv_namespaces": [
+  //   {
+  //     "binding": "SUB_KV",
+  //     "id": "your-kv-namespace-id"
+  //   }
+  // ]
+}
